@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle de Qualidade (Demonstração v4 - Rastreabilidade e AC)</title>
+    <style>
+        :root {
+            --cor-primaria: #004080;
+            --cor-primaria-escura: #003366;
+            --cor-primaria-mais-escura: #002244;
+            --cor-fundo: #f4f4f4;
+            --cor-texto-claro: white;
+            --cor-borda-tabela: #ddd;
+            --cor-sucesso-fundo: #d4edda;
+            --cor-sucesso-texto: #155724;
+            --cor-sucesso-borda: #c3e6cb;
+            --cor-erro-fundo: #f8d7da;
+            --cor-erro-texto: #721c24;
+            --cor-erro-borda: #f5c6cb;
+            --cor-aviso-fundo: #fff3cd;
+            --cor-aviso-texto: #856404;
+            --cor-aviso-borda: #ffeeba;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--cor-fundo);
+            color: #333;
+            font-size: 14px;
+        }
+
+        header {
+            background-color: var(--cor-primaria);
+            color: var(--cor-texto-claro);
+            padding: 20px;
+            text-align: center;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: var(--cor-primaria-escura);
+        }
+
+        nav a {
+            color: var(--cor-texto-claro);
+            padding: 14px 20px;
+            text-decoration: none;
+            display: block;
+        }
+
+        nav a:hover {
+            background-color: var(--cor-primaria-mais-escura);
+        }
+
+        main {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 10px;
+            width: 95%;
+            max-width: 1200px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: auto; /* Alterado para auto para melhor ajuste */
+        }
+
+        table, th, td {
+            border: 1px solid var(--cor-borda-tabela);
+            word-wrap: break-word;
+        }
+
+        th, td {
+            padding: 10px; /* Reduzido padding */
+            text-align: left;
+        }
+        
+        th {
+            background-color: var(--cor-primaria);
+            color: var(--cor-texto-claro);
+        }
+        td:nth-child(1), th:nth-child(1) { /* ID */
+             width: 3%; text-align: center;
+        }
+        td:nth-child(2), th:nth-child(2) { /* Data Insp. */
+             width: 7%; text-align: center;
+        }
+         td:nth-child(3), th:nth-child(3) { /* Produto */
+             width: 10%;
+        }
+        td:nth-child(4), th:nth-child(4) { /* Lote */
+             width: 7%; text-align: center;
+        }
+        td:nth-child(5), th:nth-child(5) { /* Validade */
+             width: 7%; text-align: center;
+        }
+        td:nth-child(6), th:nth-child(6) { /* Fornecedor */
+             width: 10%;
+        }
+        td:nth-child(7), th:nth-child(7) { /* Responsável */
+             width: 10%;
+        }
+        td:nth-child(8), th:nth-child(8) { /* Status Insp. */
+             width: 8%; text-align: center;
+        }
+        td:nth-child(9) { /* Observações */
+             width: auto; /* Deixa o restante para observações */
+        }
+        td:nth-child(10), th:nth-child(10) { /* Ações */
+             width: 10%; text-align: center;
+        }
+
+
+        .add-button, .action-button {
+            display: inline-block;
+            padding: 8px 15px;
+            margin-top: 10px;
+            background-color: var(--cor-primaria);
+            color: var(--cor-texto-claro);
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .action-button.edit { background-color: #e0a800; } /* Amarelo para editar AC */
+        .action-button.view { background-color: #17a2b8; } /* Azul claro para ver AC */
+
+
+        .add-button:hover, .action-button:hover {
+            background-color: var(--cor-primaria-escura);
+        }
+        .action-button.edit:hover { background-color: #c29100; }
+        .action-button.view:hover { background-color: #138496; }
+
+
+        footer {
+            background-color: var(--cor-primaria);
+            color: var(--cor-texto-claro);
+            text-align: center;
+            padding: 10px;
+            margin-top: 40px;
+        }
+
+        form {
+            display: grid; /* Alterado para grid para melhor layout */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1; /* Ocupa toda a largura */
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        input[type="submit"] {
+            background-color: var(--cor-primaria);
+            color: var(--cor-texto-claro);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            padding: 12px 20px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: var(--cor-primaria-escura);
+        }
+        input[type="submit"]:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #message-area-notifications {
+            padding: 10px 15px;
+            margin: 0 auto 20px auto;
+            width: 95%;
+            max-width: 1200px;
+            text-align: center;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            box-sizing: border-box;
+        }
+        .message.success {
+            background-color: var(--cor-sucesso-fundo);
+            color: var(--cor-sucesso-texto);
+            border-color: var(--cor-sucesso-borda);
+        }
+        .message.error {
+            background-color: var(--cor-erro-fundo);
+            color: var(--cor-erro-texto);
+            border-color: var(--cor-erro-borda);
+        }
+        .message.info {
+            background-color: var(--cor-aviso-fundo);
+            color: var(--cor-aviso-texto);
+            border-color: var(--cor-aviso-borda);
+        }
+
+        /* Estilos para o Modal de Ação Corretiva */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.6);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 25px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        #acaoCorretivaForm {
+             grid-template-columns: 1fr; /* Um campo por linha no modal */
+        }
+         #acaoCorretivaForm .form-group-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sistema de Controle de Qualidade</h1>
+        <h2>Demonstração v4 - Rastreabilidade e Ações Corretivas</h2>
+    </header>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">Registros de Qualidade</a>
+        <a href="#">Ações Corretivas</a>
+        <a href="#">Relatórios</a>
+        <a href="#">Sobre</a>
+    </nav>
+    <main>
+        <div id="message-area-notifications" style="display: none;"></div>
+
+        <div class="card" id="resumo-card">
+            <h2>Resumo Geral de Inspeções</h2>
+            <div id="resumo" aria-live="polite">
+                <p>Carregando dados...</p>
+            </div>
+
+            <table id="tabela-registros" aria-live="polite">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Data Insp.</th>
+                        <th>Produto</th>
+                        <th>Lote</th>
+                        <th>Validade</th>
+                        <th>Fornecedor</th>
+                        <th>Responsável Insp.</th>
+                        <th>Status Insp.</th>
+                        <th>Observações da Inspeção</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                     Dados carregados aqui
+                </tbody>
+            </table>
+            <a href="#formulario-card" class="add-button">Adicionar Novo Registro de Inspeção</a>
+        </div>
+
+        <div class="card" id="formulario-card">
+            <h2>Novo Registro de Inspeção de Qualidade</h2>
+            <form id="registroForm">
+                <div class="form-group">
+                    <label for="data">Data da Inspeção:</label>
+                    <input type="date" id="data" name="data" required>
+                </div>
+                <div class="form-group">
+                    <label for="produto">Produto:</label>
+                    <input type="text" id="produto" name="produto" required>
+                </div>
+                <div class="form-group">
+                    <label for="lote">Número do Lote:</label>
+                    <input type="text" id="lote" name="lote" required>
+                </div>
+                <div class="form-group">
+                    <label for="validade">Data de Validade:</label>
+                    <input type="date" id="validade" name="validade" required>
+                </div>
+                <div class="form-group">
+                    <label for="fornecedor">Fornecedor:</label>
+                    <input type="text" id="fornecedor" name="fornecedor">
+                </div>
+                <div class="form-group">
+                    <label for="responsavel">Responsável pela Inspeção:</label>
+                    <input type="text" id="responsavel" name="responsavel" required>
+                </div>
+                <div class="form-group">
+                    <label for="status">Status da Inspeção:</label>
+                    <select id="status" name="status" required>
+                        <option value="Conforme">Conforme</option>
+                        <option value="Não Conforme">Não Conforme</option>
+                    </select>
+                </div>
+                <div class="form-group full-width">
+                    <label for="observacoes">Observações da Inspeção:</label>
+                    <textarea id="observacoes" name="observacoes" rows="3" required></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <input type="submit" value="Salvar Registro de Inspeção">
+                </div>
+            </form>
+        </div>
+
+        <div id="acaoCorretivaModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="fecharModalAcaoCorretiva()">&times;</span>
+                <h2 id="modalTitle">Registrar Ação Corretiva</h2>
+                <form id="acaoCorretivaForm">
+                    <input type="hidden" id="acRegistroId" name="acRegistroId">
+                    <input type="hidden" id="acId" name="acId"> <div class="form-group">
+                        <label>ID da Inspeção (NC):</label>
+                        <input type="text" id="acDisplayRegistroId" name="acDisplayRegistroId" readonly disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Produto (NC):</label>
+                        <input type="text" id="acDisplayProduto" name="acDisplayProduto" readonly disabled>
+                    </div>
+                     <div class="form-group">
+                        <label>Lote (NC):</label>
+                        <input type="text" id="acDisplayLote" name="acDisplayLote" readonly disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="acObservacaoNC">Observação da Não Conformidade (Original):</label>
+                        <textarea id="acObservacaoNC" name="acObservacaoNC" rows="2" readonly disabled></textarea>
+                    </div>
+                     <div class="form-group">
+                        <label for="acCausaRaiz">Análise de Causa Raiz:</label>
+                        <textarea id="acCausaRaiz" name="acCausaRaiz" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="acAcaoProposta">Ação Corretiva Proposta/Executada:</label>
+                        <textarea id="acAcaoProposta" name="acAcaoProposta" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group-grid-2">
+                        <div class="form-group">
+                            <label for="acResponsavel">Responsável pela Ação Corretiva:</label>
+                            <input type="text" id="acResponsavel" name="acResponsavel" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="acPrazo">Prazo para Conclusão:</label>
+                            <input type="date" id="acPrazo" name="acPrazo" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="acStatus">Status da Ação Corretiva:</label>
+                        <select id="acStatus" name="acStatus" required>
+                            <option value="Aberta">Aberta</option>
+                            <option value="Em Andamento">Em Andamento</option>
+                            <option value="Concluída">Concluída</option>
+                            <option value="Verificada (Eficaz)">Verificada (Eficaz)</option>
+                            <option value="Verificada (Não Eficaz)">Verificada (Não Eficaz)</option>
+                        </select>
+                    </div>
+                     <div class="form-group">
+                        <label for="acVerificacao">Notas de Verificação da Eficácia:</label>
+                        <textarea id="acVerificacao" name="acVerificacao" rows="2"></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <input type="submit" value="Salvar Ação Corretiva">
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+    <footer>
+        &copy; <span id="currentYear"></span> Sistema de Controle de Qualidade. Todos os direitos reservados.
+        <p style="font-size: 0.8em; margin-top: 5px;">Este é um sistema de demonstração. Dados não são persistidos permanentemente.</p>
+    </footer>
+
+    <script>
+        // --- INÍCIO DA SIMULAÇÃO DE BACKEND / API ---
+        let registrosMock = [
+            { id: 1, data: '2025-05-01', produto: 'Dipirona Gotas 20ml', lote: 'LOTE001', validade: '2027-04-30', fornecedor: 'Farmaco S.A.', responsavel: 'Ana Silva', status: 'Conforme', observacoes: 'Inspeção inicial de rotina, tudo conforme os padrões.' },
+            { id: 2, data: '2025-05-02', produto: 'Amoxicilina 500mg Comp.', lote: 'LOTE002B', validade: '2026-11-01', fornecedor: 'Quimica Gen Ltda', responsavel: 'Carlos Lima', status: 'Não Conforme', observacoes: 'Embalagem secundária amassada. Produto interno aparentemente íntegro, mas requer atenção.' },
+            { id: 3, data: '2025-05-03', produto: 'Paracetamol Sol Oral 15ml', lote: 'LOTE003', validade: '2028-01-15', fornecedor: 'MedBrasil Ind.', responsavel: 'Mariana Costa', status: 'Conforme', observacoes: 'Verificação de qualidade do produto finalizado, aprovado para envio.' }
+        ];
+        let proximoIdRegistro = 4;
+
+        let acoesCorretivasMock = [
+            // Exemplo: { id: 1, registroId: 2, causaRaiz: 'Falha no transporte.', acaoProposta: 'Revisar contrato com transportadora.', acResponsavel: 'Julio Cesar', acPrazo: '2025-05-15', acStatus: 'Aberta', acVerificacao: ''}
+        ];
+        let proximoIdAC = 1;
+
+        function simularGetRegistros() {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const total = registrosMock.length;
+                    const naoConformes = registrosMock.filter(r => r.status === 'Não Conforme').length;
+                    const statusGeral = naoConformes > 0 ? `Atenção: ${naoConformes} não conformidade(s) registrada(s)` : 'Tudo Conforme';
+                    
+                    // Adiciona informação sobre AC aos registros
+                    const registrosComACInfo = registrosMock.map(reg => {
+                        const acAssociada = acoesCorretivasMock.find(ac => ac.registroId === reg.id);
+                        return { ...reg, ac: acAssociada };
+                    });
+
+                    resolve({
+                        total,
+                        naoConformes,
+                        statusGeral,
+                        registros: JSON.parse(JSON.stringify(registrosComACInfo))
+                    });
+                }, 300);
+            });
+        }
+
+        function simularPostRegistro(novoRegistro) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    if (!novoRegistro.data || !novoRegistro.produto || !novoRegistro.lote || !novoRegistro.validade || !novoRegistro.responsavel || !novoRegistro.status || !novoRegistro.observacoes.trim()) {
+                        reject({ message: 'Dados incompletos. Todos os campos marcados com * são obrigatórios, incluindo Observações.' });
+                        return;
+                    }
+                    const registroParaSalvar = { ...novoRegistro, id: proximoIdRegistro++ };
+                    registrosMock.push(registroParaSalvar);
+                    resolve({
+                        message: 'Registro de Inspeção salvo com sucesso na simulação!',
+                        registro: registroParaSalvar
+                    });
+                }, 300);
+            });
+        }
+
+        function simularPostAcaoCorretiva(dadosAC) {
+             return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    if (!dadosAC.acRegistroId || !dadosAC.acCausaRaiz || !dadosAC.acAcaoProposta || !dadosAC.acResponsavel || !dadosAC.acPrazo || !dadosAC.acStatus) {
+                        reject({ message: 'Dados incompletos para Ação Corretiva. Preencha os campos obrigatórios.' });
+                        return;
+                    }
+
+                    if (dadosAC.acId) { // Editando AC existente
+                        const index = acoesCorretivasMock.findIndex(ac => ac.id === parseInt(dadosAC.acId));
+                        if (index !== -1) {
+                            acoesCorretivasMock[index] = { ...acoesCorretivasMock[index], ...dadosAC, id: parseInt(dadosAC.acId), registroId: parseInt(dadosAC.acRegistroId) };
+                             resolve({ message: 'Ação Corretiva atualizada com sucesso!', ac: acoesCorretivasMock[index] });
+                        } else {
+                            reject({ message: 'Ação Corretiva não encontrada para edição.' });
+                        }
+                    } else { // Nova AC
+                        const novaAC = { ...dadosAC, id: proximoIdAC++, registroId: parseInt(dadosAC.acRegistroId) };
+                        acoesCorretivasMock.push(novaAC);
+                        resolve({ message: 'Ação Corretiva salva com sucesso!', ac: novaAC });
+                    }
+                }, 300);
+            });
+        }
+        // --- FIM DA SIMULAÇÃO DE BACKEND / API ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            const resumoDiv = document.getElementById('resumo');
+            const tabelaBody = document.querySelector('#tabela-registros tbody');
+            const registroForm = document.getElementById('registroForm');
+            const messageArea = document.getElementById('message-area-notifications');
+            
+            const acModal = document.getElementById('acaoCorretivaModal');
+            const acForm = document.getElementById('acaoCorretivaForm');
+            const modalTitle = document.getElementById('modalTitle');
+
+            function displayMessage(message, type, duration = 5000) {
+                messageArea.textContent = message;
+                messageArea.className = `message ${type}`;
+                messageArea.style.display = 'block';
+                messageArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setTimeout(() => {
+                    messageArea.style.display = 'none';
+                }, duration);
+            }
+
+            function fetchAndRenderRegistros() {
+                resumoDiv.innerHTML = "<p>Carregando dados...</p>";
+                tabelaBody.innerHTML = "";
+
+                simularGetRegistros()
+                    .then(data => {
+                        resumoDiv.innerHTML = `<p>Total de Inspeções realizadas: ${data.total}</p>
+                                              <p>Total de Não Conformidades: ${data.naoConformes}</p>
+                                              <p>Status Geral das Inspeções: <strong>${data.statusGeral}</strong></p>`;
+
+                        if (data.registros && data.registros.length > 0) {
+                            data.registros.forEach(reg => {
+                                const row = tabelaBody.insertRow();
+                                row.insertCell().textContent = reg.id;
+                                row.insertCell().textContent = new Date(reg.data + 'T00:00:00').toLocaleDateString('pt-BR');
+                                row.insertCell().textContent = reg.produto;
+                                row.insertCell().textContent = reg.lote;
+                                row.insertCell().textContent = new Date(reg.validade + 'T00:00:00').toLocaleDateString('pt-BR');
+                                row.insertCell().textContent = reg.fornecedor || 'N/A';
+                                row.insertCell().textContent = reg.responsavel;
+                                
+                                const cellStatus = row.insertCell();
+                                cellStatus.textContent = reg.status;
+                                if (reg.status === 'Não Conforme') {
+                                    cellStatus.style.color = 'var(--cor-erro-texto)';
+                                    cellStatus.style.backgroundColor = 'var(--cor-erro-fundo)';
+                                    cellStatus.style.fontWeight = 'bold';
+                                } else {
+                                    cellStatus.style.color = 'var(--cor-sucesso-texto)';
+                                    cellStatus.style.backgroundColor = 'var(--cor-sucesso-fundo)';
+                                }
+                                
+                                row.insertCell().textContent = reg.observacoes;
+                                
+                                const cellAcoes = row.insertCell();
+                                if (reg.status === 'Não Conforme') {
+                                    if (reg.ac) { // Se já existe AC
+                                        const btnVerAC = document.createElement('button');
+                                        btnVerAC.textContent = 'Ver/Editar AC';
+                                        btnVerAC.classList.add('action-button', 'edit');
+                                        btnVerAC.onclick = () => abrirModalAcaoCorretiva(reg.id, true);
+                                        cellAcoes.appendChild(btnVerAC);
+                                    } else {
+                                        const btnAddAC = document.createElement('button');
+                                        btnAddAC.textContent = 'Registrar AC';
+                                        btnAddAC.classList.add('action-button');
+                                        btnAddAC.onclick = () => abrirModalAcaoCorretiva(reg.id);
+                                        cellAcoes.appendChild(btnAddAC);
+                                    }
+                                } else {
+                                    cellAcoes.textContent = '-';
+                                }
+                            });
+                        } else {
+                            const row = tabelaBody.insertRow();
+                            const cell = row.insertCell();
+                            cell.colSpan = 10;
+                            cell.textContent = "Nenhum registro de inspeção encontrado.";
+                            cell.style.textAlign = 'center';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar dados (simulação):', error);
+                        resumoDiv.innerHTML = "<p>Erro ao carregar os dados. Tente novamente mais tarde.</p>";
+                        tabelaBody.innerHTML = "<tr><td colspan='10' style='text-align:center;'>Não foi possível carregar os registros.</td></tr>";
+                        displayMessage(`Erro ao carregar dados: ${error.message || 'Erro desconhecido'}`, 'error');
+                    });
+            }
+            
+            window.abrirModalAcaoCorretiva = function(registroId, editMode = false) {
+                const registroNC = registrosMock.find(r => r.id === registroId);
+                if (!registroNC || registroNC.status !== 'Não Conforme') {
+                    displayMessage('Ação Corretiva só pode ser aberta para registros Não Conformes.', 'error');
+                    return;
+                }
+
+                acForm.reset(); // Limpa o formulário
+                document.getElementById('acRegistroId').value = registroId;
+                document.getElementById('acDisplayRegistroId').value = registroNC.id;
+                document.getElementById('acDisplayProduto').value = registroNC.produto;
+                document.getElementById('acDisplayLote').value = registroNC.lote;
+                document.getElementById('acObservacaoNC').value = registroNC.observacoes;
+
+                const acExistente = acoesCorretivasMock.find(ac => ac.registroId === registroId);
+
+                if (editMode && acExistente) {
+                    modalTitle.textContent = "Editar Ação Corretiva";
+                    document.getElementById('acId').value = acExistente.id;
+                    document.getElementById('acCausaRaiz').value = acExistente.acCausaRaiz || '';
+                    document.getElementById('acAcaoProposta').value = acExistente.acAcaoProposta || '';
+                    document.getElementById('acResponsavel').value = acExistente.acResponsavel || '';
+                    document.getElementById('acPrazo').value = acExistente.acPrazo || '';
+                    document.getElementById('acStatus').value = acExistente.acStatus || 'Aberta';
+                    document.getElementById('acVerificacao').value = acExistente.acVerificacao || '';
+                } else {
+                    modalTitle.textContent = "Registrar Nova Ação Corretiva";
+                     document.getElementById('acId').value = ''; // Limpa ID de AC para garantir que é uma nova
+                }
+                
+                acModal.style.display = "block";
+            }
+
+            window.fecharModalAcaoCorretiva = function() {
+                acModal.style.display = "none";
+            }
+
+            // Fechar modal se clicar fora dele
+            window.onclick = function(event) {
+                if (event.target == acModal) {
+                    fecharModalAcaoCorretiva();
+                }
+            }
+
+            registroForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = {
+                    data: document.getElementById('data').value,
+                    produto: document.getElementById('produto').value,
+                    lote: document.getElementById('lote').value,
+                    validade: document.getElementById('validade').value,
+                    fornecedor: document.getElementById('fornecedor').value,
+                    responsavel: document.getElementById('responsavel').value,
+                    status: document.getElementById('status').value,
+                    observacoes: document.getElementById('observacoes').value
+                };
+
+                const submitButton = registroForm.querySelector('input[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.value = 'Salvando Inspeção...';
+
+                simularPostRegistro(formData)
+                    .then(result => {
+                        displayMessage(result.message, 'success');
+                        registroForm.reset();
+                        fetchAndRenderRegistros(); 
+                    })
+                    .catch(error => {
+                        console.error('Erro ao salvar inspeção (simulação):', error);
+                        displayMessage(`Erro ao salvar o registro de inspeção: ${error.message || 'Erro desconhecido'}`, 'error');
+                    })
+                    .finally(() => {
+                        submitButton.disabled = false;
+                        submitButton.value = 'Salvar Registro de Inspeção';
+                    });
+            });
+
+            acForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formDataAC = {
+                    acId: document.getElementById('acId').value, // Pode estar vazio se for nova AC
+                    acRegistroId: document.getElementById('acRegistroId').value,
+                    acCausaRaiz: document.getElementById('acCausaRaiz').value,
+                    acAcaoProposta: document.getElementById('acAcaoProposta').value,
+                    acResponsavel: document.getElementById('acResponsavel').value,
+                    acPrazo: document.getElementById('acPrazo').value,
+                    acStatus: document.getElementById('acStatus').value,
+                    acVerificacao: document.getElementById('acVerificacao').value
+                };
+                
+                const submitButtonAC = acForm.querySelector('input[type="submit"]');
+                submitButtonAC.disabled = true;
+                submitButtonAC.value = 'Salvando AC...';
+
+                simularPostAcaoCorretiva(formDataAC)
+                    .then(result => {
+                        displayMessage(result.message, 'success');
+                        acForm.reset();
+                        fecharModalAcaoCorretiva();
+                        fetchAndRenderRegistros(); // Atualiza a tabela principal para refletir o status da AC
+                    })
+                    .catch(error => {
+                         console.error('Erro ao salvar Ação Corretiva (simulação):', error);
+                         displayMessage(`Erro ao salvar Ação Corretiva: ${error.message || 'Erro desconhecido'}`, 'error', 7000); // Mensagem mais longa
+                    })
+                    .finally(() => {
+                        submitButtonAC.disabled = false;
+                        submitButtonAC.value = 'Salvar Ação Corretiva';
+                    });
+            });
+
+            fetchAndRenderRegistros();
+        });
+    </script>
+</body>
+</html>

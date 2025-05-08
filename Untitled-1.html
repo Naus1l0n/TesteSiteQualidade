@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle de Qualidade (Demonstração v3 - Status Silencioso)</title>
+    <style>
+        :root {
+            --cor-primaria: #004080;
+            --cor-primaria-escura: #003366;
+            --cor-primaria-mais-escura: #002244;
+            --cor-fundo: #f4f4f4;
+            --cor-texto-claro: white;
+            --cor-borda-tabela: #ddd;
+            --cor-sucesso-fundo: #d4edda;
+            --cor-sucesso-texto: #155724;
+            --cor-sucesso-borda: #c3e6cb;
+            --cor-erro-fundo: #f8d7da;
+            --cor-erro-texto: #721c24;
+            --cor-erro-borda: #f5c6cb;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--cor-fundo);
+            color: #333;
+        }
+
+        header {
+            background-color: var(--cor-primaria);
+            color: var(--cor-texto-claro);
+            padding: 20px;
+            text-align: center;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: var(--cor-primaria-escura);
+        }
+
+        nav a {
+            color: var(--cor-texto-claro);
+            padding: 14px 20px;
+            text-decoration: none;
+            display: block;
+        }
+
+        nav a:hover {
+            background-color: var(--cor-primaria-mais-escura);
+        }
+
+        main {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 10px;
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: fixed;
+        }
+
+        table, th, td {
+            border: 1px solid var(--cor-borda-tabela);
+            word-wrap: break-word;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+        
+        th:nth-child(5), td:nth-child(5) {
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--cor-primaria);
+            color: var(--cor-texto-claro);
+        }
+
+        .add-button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 20px;
+            background-color: var(--cor-primaria);
+            color: var(--cor-texto-claro);
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .add-button:hover {
+            background-color: var(--cor-primaria-escura);
+        }
+
+        footer {
+            background-color: var(--cor-primaria);
+            color: var(--cor-texto-claro);
+            text-align: center;
+            padding: 10px;
+            margin-top: 40px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        input[type="submit"] {
+            background-color: var(--cor-primaria);
+            color: var(--cor-texto-claro);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: var(--cor-primaria-escura);
+        }
+        input[type="submit"]:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* A div de mensagens ainda existe no HTML, mas não será usada ativamente pelo JS */
+        #message-area-notifications {
+            padding: 10px 15px;
+            margin: 0 auto 20px auto;
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            box-sizing: border-box;
+        }
+        .message.success { /* Estilos mantidos caso queira reativar as mensagens */
+            background-color: var(--cor-sucesso-fundo);
+            color: var(--cor-sucesso-texto);
+            border-color: var(--cor-sucesso-borda);
+        }
+        .message.error { /* Estilos mantidos caso queira reativar as mensagens */
+            background-color: var(--cor-erro-fundo);
+            color: var(--cor-erro-texto);
+            border-color: var(--cor-erro-borda);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sistema de Controle de Qualidade</h1>
+    </header>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">Registros</a>
+        <a href="#">Relatórios</a>
+        <a href="#">Sobre</a>
+    </nav>
+    <main>
+        <div id="message-area-notifications" style="display: none;"></div>
+
+        <div class="card" id="resumo-card">
+            <h2>Resumo Geral</h2>
+            <div id="resumo" aria-live="polite">
+                <p>Carregando dados...</p>
+            </div>
+
+            <table id="tabela-registros" aria-live="polite">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Data</th>
+                        <th>Responsável</th>
+                        <th>Status</th>
+                        <th>Observações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {/* Dados carregados aqui */}
+                </tbody>
+            </table>
+            <a href="#formulario-card" class="add-button">Adicionar Novo Registro</a>
+        </div>
+
+        <div class="card" id="formulario-card">
+            <h2>Novo Registro de Qualidade</h2>
+            <form id="registroForm">
+                <label for="data">Data:</label>
+                <input type="date" id="data" name="data" required>
+
+                <label for="responsavel">Responsável:</label>
+                <input type="text" id="responsavel" name="responsavel" required>
+
+                <label for="status">Status:</label>
+                <select id="status" name="status" required>
+                    <option value="Conforme">Conforme</option>
+                    <option value="Não Conforme">Não Conforme</option>
+                </select>
+
+                <label for="observacoes">Observações:</label>
+                <textarea id="observacoes" name="observacoes" rows="4" required></textarea>
+
+                <input type="submit" value="Salvar Registro">
+            </form>
+        </div>
+    </main>
+    <footer>
+        &copy; 2025 Sistema de Controle de Qualidade. Todos os direitos reservados.
+    </footer>
+
+    <script>
+        // --- INÍCIO DA SIMULAÇÃO DE BACKEND / API ---
+        let registrosMock = [
+            { id: 1, data: '2025-05-01', responsavel: 'Ana Silva', status: 'Conforme', observacoes: 'Inspeção inicial de rotina, tudo conforme os padrões.' },
+            { id: 2, data: '2025-05-02', responsavel: 'Carlos Lima', status: 'Não Conforme', observacoes: 'Lote 3B apresentou falha na soldagem da peça X. Necessário retrabalho.' },
+            { id: 3, data: '2025-05-03', responsavel: 'Mariana Costa', status: 'Conforme', observacoes: 'Verificação de qualidade do produto finalizado, aprovado para envio ao cliente.' }
+        ];
+        let proximoId = 4;
+
+        function simularGetRegistros() {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const total = registrosMock.length;
+                    const naoConformes = registrosMock.filter(r => r.status === 'Não Conforme').length;
+                    const statusGeral = naoConformes > 0 ? `Atenção: ${naoConformes} não conformidade(s)` : 'Tudo Conforme';
+                    resolve({
+                        total,
+                        naoConformes,
+                        statusGeral,
+                        registros: JSON.parse(JSON.stringify(registrosMock))
+                    });
+                }, 300);
+            });
+        }
+
+        function simularPostRegistro(novoRegistro) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    if (!novoRegistro.data || !novoRegistro.responsavel || !novoRegistro.status || !novoRegistro.observacoes.trim()) {
+                        reject({ message: 'Dados incompletos. Data, Responsável, Status e Observações são obrigatórios.' });
+                        return;
+                    }
+                    const registroParaSalvar = { ...novoRegistro, id: proximoId++ };
+                    registrosMock.push(registroParaSalvar);
+                    resolve({
+                        message: 'Registro salvo com sucesso na simulação!', // Esta mensagem não será exibida na tela
+                        registro: registroParaSalvar
+                    });
+                }, 300);
+            });
+        }
+        // --- FIM DA SIMULAÇÃO DE BACKEND / API ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const resumoDiv = document.getElementById('resumo');
+            const tabelaBody = document.querySelector('#tabela-registros tbody');
+            const registroForm = document.getElementById('registroForm');
+            // const messageArea = document.getElementById('message-area-notifications'); // Variável não mais necessária se displayMessage for removida
+
+            function fetchAndRenderRegistros() {
+                resumoDiv.innerHTML = "<p>Carregando dados...</p>";
+                tabelaBody.innerHTML = "";
+
+                simularGetRegistros()
+                    .then(data => {
+                        resumoDiv.innerHTML = `<p>Inspeções realizadas: ${data.total}</p>
+                                               <p>Não conformidades: ${data.naoConformes}</p>
+                                               <p>Status geral: <strong>${data.statusGeral}</strong></p>`;
+
+                        if (data.registros && data.registros.length > 0) {
+                            data.registros.forEach(reg => {
+                                const row = tabelaBody.insertRow();
+                                const cellId = row.insertCell();
+                                cellId.textContent = reg.id;
+                                const cellData = row.insertCell();
+                                cellData.textContent = new Date(reg.data + 'T00:00:00').toLocaleDateString('pt-BR');
+                                const cellResponsavel = row.insertCell();
+                                cellResponsavel.textContent = reg.responsavel;
+                                const cellStatus = row.insertCell();
+                                cellStatus.textContent = reg.status;
+                                if (reg.status === 'Não Conforme') {
+                                    cellStatus.style.color = 'red';
+                                    cellStatus.style.fontWeight = 'bold';
+                                }
+                                const cellObservacoes = row.insertCell();
+                                cellObservacoes.textContent = reg.observacoes;
+                                cellObservacoes.style.textAlign = 'left';
+                            });
+                        } else {
+                            const row = tabelaBody.insertRow();
+                            const cell = row.insertCell();
+                            cell.colSpan = 5;
+                            cell.textContent = "Nenhum registro encontrado.";
+                            cell.style.textAlign = 'center';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar dados (simulação):', error);
+                        resumoDiv.innerHTML = "<p>Erro ao carregar os dados. Tente novamente mais tarde.</p>";
+                        tabelaBody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Não foi possível carregar os registros.</td></tr>";
+                        // displayMessage(`Erro ao carregar dados: ${error.message || 'Erro desconhecido'}`, 'error'); // CHAMADA COMENTADA
+                    });
+            }
+
+            /* // Função displayMessage não é mais usada para exibir status na tela
+            function displayMessage(message, type) {
+                messageArea.textContent = message;
+                messageArea.className = `message ${type}`;
+                messageArea.style.display = 'block';
+                setTimeout(() => {
+                    messageArea.style.display = 'none';
+                }, 5000);
+            }
+            */
+
+            registroForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = {
+                    data: document.getElementById('data').value,
+                    responsavel: document.getElementById('responsavel').value,
+                    status: document.getElementById('status').value,
+                    observacoes: document.getElementById('observacoes').value
+                };
+
+                const submitButton = registroForm.querySelector('input[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.value = 'Salvando...';
+
+                simularPostRegistro(formData)
+                    .then(result => {
+                        // displayMessage(result.message, 'success'); // CHAMADA COMENTADA
+                        registroForm.reset();
+                        fetchAndRenderRegistros(); // Atualiza a tabela
+                    })
+                    .catch(error => {
+                        console.error('Erro ao salvar (simulação):', error); // Mantém log no console
+                        // displayMessage(`Erro ao salvar o registro: ${error.message || 'Erro desconhecido'}`, 'error'); // CHAMADA COMENTADA
+                        // Se houver erro de validação, o registro não é adicionado e nenhuma mensagem aparece na tela.
+                        // O usuário precisaria verificar o console para ver o erro de validação.
+                    })
+                    .finally(() => {
+                        submitButton.disabled = false;
+                        submitButton.value = 'Salvar Registro';
+                    });
+            });
+
+            fetchAndRenderRegistros();
+        });
+    </script>
+</body>
+</html>
